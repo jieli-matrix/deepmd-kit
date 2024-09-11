@@ -48,7 +48,7 @@ class DensityCalculator:
         self.cell_volume = np.abs(np.linalg.det(self.lattice_constant * self.lat_vec))
 
         # Calculate G vectors (in units of 2π/lattice_constant)
-        self.bmat = 2 * np.pi * self.bmat / self.lattice_constant
+        self.bmat = 2 * np.pi * self.bmat 
         # self.g_vectors = 2 * np.pi * np.dot(self.miller_indices, self.bmat.T)
         self.g_vectors = np.dot(self.miller_indices, self.bmat.T)
     def calculate_density_batch(self, points: np.ndarray) -> np.ndarray:

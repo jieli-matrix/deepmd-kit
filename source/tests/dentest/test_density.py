@@ -6,7 +6,7 @@ import os
 class TestDensityCalculatorRhog:
     @pytest.fixture
     def sample_files(self):
-        test_sys = os.path.join(os.path.dirname(__file__), "dataset/Mg1Al20Cu11") # frame 0 in Mg1Al20Cu11
+        test_sys = os.path.join(os.path.dirname(__file__), "dataset/Mg1Al22Cu9") # frame 0 in Mg1Al20Cu11
         cube_file = os.path.join(test_sys, "OUT.ABACUS", "SPIN1_CHG.cube")
         binary_file = os.path.join(test_sys, "OUT.ABACUS", "ABACUS-CHARGE-DENSITY.restart")
         return str(cube_file), str(binary_file)
@@ -77,9 +77,11 @@ class TestDensityCalculatorRhog:
         # Calculate real space coordinates
         grid_coords = np.column_stack([x_indices, y_indices, z_indices])
         real_coords = np.dot(grid_coords, cube_data['grid_spacing']) + cube_data['origin']
+    
         
         # Calculate densities using rhog method
-        rhog_densities = calculator.calculate_density_batch(real_coords)
+        # Note: input points are dimensonless!
+        rhog_densities = calculator.calculate_density_batch(real_coords / calculator.lattice_constant)
         
         # Compare densities
         relative_diff = np.abs((rhog_densities - cube_densities) / cube_densities)
@@ -95,7 +97,8 @@ class TestDensityCalculatorRhog:
     def test_periodic_boundary_conditions(self, calculator):
         lattice_vectors = calculator.get_lattice_vectors()
         point1 = np.array([[0, 0, 0]])
-        point2 = lattice_vectors @ np.array([3, 1, 1]) 
-        density1 = calculator.calculate_density_batch(point1)
-        density2 = calculator.calculate_density_batch(point2)
+        point2 = lattice_vectors @ np.array([3, 1, 1])
+        # Note: input points are dimensonless!
+        density1 = calculator.calculate_density_batch(point1 / calculator.lattice_constant)
+        density2 = calculator.calculate_density_batch(point2 / calculator.lattice_constant)
         assert np.isclose(density1, density2)
