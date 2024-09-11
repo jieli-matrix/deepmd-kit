@@ -2,8 +2,7 @@
 import numpy as np
 from typing import Tuple
 class DensityCalculator:
-    def __init__(self, binary_file: str, lattice_constant: float):
-        self.lattice_constant = lattice_constant  # in Bohr
+    def __init__(self, binary_file: str):
         self.read_binary_file(binary_file)
 
     def read_binary_file(self, filename: str):
@@ -44,9 +43,6 @@ class DensityCalculator:
         # Calculate real space lattice vectors (dimensionless)
         self.lat_vec = np.linalg.inv(self.bmat).T
 
-        # Calculate cell volume
-        self.cell_volume = np.abs(np.linalg.det(self.lattice_constant * self.lat_vec))
-
         # Calculate G vectors (in units of 2π/lattice_constant)
         self.bmat = 2 * np.pi * self.bmat 
         # self.g_vectors = 2 * np.pi * np.dot(self.miller_indices, self.bmat.T)
@@ -70,9 +66,9 @@ class DensityCalculator:
         Get the real space lattice vectors.
         
         Returns:
-            np.ndarray: Real space lattice vectors, shape (3, 3), in Bohr units
+            np.ndarray: Real space lattice vectors, shape (3, 3), in Angstrom
         """
-        return self.lattice_constant * self.lat_vec
+        return self.lat_vec
     
 
 # def generate_grid(
