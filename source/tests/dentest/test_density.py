@@ -102,3 +102,45 @@ class TestDensityCalculatorRhog:
         density1 = calculator.calculate_density_batch(point1)
         density2 = calculator.calculate_density_batch(point2)
         assert np.isclose(density1, density2)
+    
+    def test_density_grad_calculation(self, calculator, cube_data):
+        num_test_points = 1000
+        nx, ny, nz = cube_data['nx'], cube_data['ny'], cube_data['nz']
+        
+        # Generate random indices
+        random_indices = np.random.choice(nx * ny * nz, num_test_points, replace=False)
+        x_indices = random_indices // (ny * nz)
+        y_indices = (random_indices % (ny * nz)) // nz
+        z_indices = random_indices % nz
+        
+        # Get cube densities at these points
+        cube_densities = cube_data['density'][x_indices, y_indices, z_indices]
+        
+        # Calculate real space coordinates
+        grid_coords = np.column_stack([x_indices, y_indices, z_indices])
+        real_coords = np.dot(grid_coords, cube_data['grid_spacing']) + cube_data['origin']
+        
+        # Calculate density and gradient
+        # Note: input points are dimensonless!
+        lattice_constant = 1.8897261246257702
+        densities, gradients = calculator.calculate_density_grad_batch(real_coords / lattice_constant)
+        
+        # Check shapes
+        assert densities.shape == (num_test_points,)
+        assert gradients.shape == (num_test_points, 3)
+        
+        # Verify gradient calculation using finite difference
+        h = 1e-5  # Small displacement for finite difference
+        for i in range(3):
+            displacement = np.zeros(3)
+            displacement[i] = h
+            forward_points = real_coords + displacement
+            backward_points = real_coords - displacement
+            
+            forward_densities = calculator.calculate_density_batch(forward_points / lattice_constant)
+            backward_densities = calculator.calculate_density_batch(backward_points / lattice_constant)
+            
+            numerical_gradient = lattice_constant * (forward_densities - backward_densities) / (2 * h)
+            
+            assert np.allclose(gradients[:, i], numerical_gradient, rtol=1e-6, atol=1e-6)
+        
