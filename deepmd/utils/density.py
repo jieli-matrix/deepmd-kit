@@ -55,11 +55,33 @@ class DensityCalculator:
             points (np.ndarray): Array of points in real space, shape (n, 3), in units of lattice_constant
         
         Returns:
-            np.ndarray: Exact density values
+            np.ndarray: Exact density values, shape (n_points,).
         """
         phases = np.exp(1j * np.dot(points, self.g_vectors.T))
         densities = np.real(np.dot(phases, self.rhog))
         return densities
+
+    def calculate_density_grad_batch(self, points: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Calculate the density and its gradient using Fourier transform.
+        
+        Args:
+            points (np.ndarray): Array of points in real space, shape (n, 3), in Bohr units
+        
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: 
+                - Density values, shape (n_points,)
+                - Gradients, shape (n_points, 3)
+        """
+        phases = np.exp(1j * np.dot(points, self.g_vectors.T))
+        
+        # calculate density
+        densities = np.real(np.dot(phases, self.rhog))
+        # Calculate gradients
+        ig_rhog = 1j * self.g_vectors * self.rhog[:, np.newaxis]  # shape: (ngm_g, 3)
+        gradients = np.real(np.dot(phases, ig_rhog)) # shape: (n_points, 3)
+
+        return densities, gradients
 
     def get_lattice_vectors(self) -> np.ndarray:
         """
