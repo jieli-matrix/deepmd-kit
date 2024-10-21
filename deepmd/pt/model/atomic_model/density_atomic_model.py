@@ -49,14 +49,17 @@ class DPDensityAtomicModel(DPAtomicModel):
         self.sel = self.descriptor.get_sel()
         self.nnei = self.descriptor.get_nsel()
         self.axis_neuron = self.descriptor.axis_neuron
-        neurons = []
-        dims = [1 + self.descriptor.repinit_args.tebd_dim] + neurons + [self.descriptor.get_dim_out()]
+
+        # Get the grid_embedding_neurons from the fitting instance
+        self.grid_embedding_neurons = getattr(self.fitting, 'grid_embedding_neurons', [])
+        
+        dims = [1 + self.descriptor.repinit_args.tebd_dim] + self.grid_embedding_neurons + [self.descriptor.get_dim_out()]
         self.grid_embedding_layers = [MLPLayer(
             dims[i],
             dims[i+1],
             precision=env.DEFAULT_PRECISION,
             activation_function="tanh",
-        ) for i in range(len(neurons)+1)]
+        ) for i in range(len(self.grid_embedding_neurons) + 1)]
 
         wanted_shape = (1, self.nnei, 4)
         mean = torch.zeros(

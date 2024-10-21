@@ -43,6 +43,7 @@ class DensityFittingNet(InvarFitting):
         ntypes: int,
         dim_descrpt: int,
         neuron: List[int] = [128, 128, 128],
+        grid_embedding_neurons: List[int] = [],  # Add this line
         bias_atom_e: Optional[torch.Tensor] = None,
         resnet_dt: bool = True,
         numb_fparam: int = 0,
@@ -71,6 +72,7 @@ class DensityFittingNet(InvarFitting):
             type_map=type_map,
             **kwargs,
         )
+        self.grid_embedding_neurons = grid_embedding_neurons  
 
     def output_def(self) -> FittingOutputDef:
         return FittingOutputDef(
@@ -91,13 +93,17 @@ class DensityFittingNet(InvarFitting):
         check_version_compatibility(data.pop("@version", 1), 2, 1)
         data.pop("var_name")
         data.pop("dim_out")
-        return super().deserialize(data)
+        grid_embedding_neurons = data.pop("grid_embedding_neurons", [])  
+        instance = super().deserialize(data)
+        instance.grid_embedding_neurons = grid_embedding_neurons  
+        return instance
 
     def serialize(self) -> dict:
         """Serialize the fitting to dict."""
         return {
             **super().serialize(),
             "type": "density",
+            "grid_embedding_neurons": self.grid_embedding_neurons, 
         }
 
     # make jit happy with torch 2.0.0
