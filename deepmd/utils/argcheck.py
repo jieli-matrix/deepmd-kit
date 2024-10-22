@@ -1499,6 +1499,7 @@ def fitting_density():
     doc_numb_fparam = "The dimension of the frame parameter. If set to >0, file `fparam.npy` should be included to provided the input fparams."
     doc_numb_aparam = "The dimension of the atomic parameter. If set to >0, file `aparam.npy` should be included to provided the input aparams."
     doc_neuron = "The number of neurons in each hidden layers of the fitting net. When two hidden layers are of the same size, a skip connection is built."
+    doc_grid_embedding_neurons = "The number of neurons in each hidden layer of the grid embedding network. Default is empty list which means no hidden layers."  # Add this line
     doc_activation_function = f'The activation function in the fitting net. Supported activation functions are {list_to_doc(ACTIVATION_FN_DICT.keys())} Note that "gelu" denotes the custom operator version, and "gelu_tf" denotes the TF standard version. If you set "None" or "none" here, no activation function will be used.'
     doc_precision = f"The precision of the fitting net parameters, supported options are {list_to_doc(PRECISION_DICT.keys())} Default follows the interface precision."
     doc_resnet_dt = 'Whether to use a "Timestep" in the skip connection'
@@ -1518,6 +1519,13 @@ def fitting_density():
             default=[120, 120, 120],
             alias=["n_neuron"],
             doc=doc_neuron,
+        ),
+        Argument(  # Add this argument
+            "grid_embedding_neurons",
+            List[int],
+            optional=True,
+            default=[],
+            doc=doc_grid_embedding_neurons,
         ),
         Argument(
             "activation_function",
@@ -1540,7 +1548,6 @@ def fitting_density():
         ),
         Argument("seed", [int, None], optional=True, doc=doc_seed),
     ]
-
 
 @fitting_args_plugin.register("dos")
 def fitting_dos():
