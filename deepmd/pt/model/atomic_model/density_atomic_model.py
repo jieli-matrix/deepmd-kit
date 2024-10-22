@@ -51,7 +51,7 @@ class DPDensityAtomicModel(DPAtomicModel):
         self.axis_neuron = self.descriptor.axis_neuron
 
         # Get the grid_embedding_neurons from the fitting instance
-        self.grid_embedding_neurons = getattr(self.fitting, 'grid_embedding_neurons', [])
+        self.grid_embedding_neurons = fitting.grid_embedding_neurons if hasattr(fitting, 'grid_embedding_neurons') else []
         
         dims = [1 + self.descriptor.repinit_args.tebd_dim] + self.grid_embedding_neurons + [self.descriptor.get_dim_out()]
         self.grid_embedding_layers = [MLPLayer(
